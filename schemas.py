@@ -24,6 +24,15 @@ class ProdutoOut(ProdutoBase):
     class Config:
         orm_mode = True
 
+class ProdutoUpdate(BaseModel):
+    nome: Optional[str] = None
+    descricao: Optional[str] = None
+    preco: Optional[float] = None
+    estoque: Optional[int] = None
+    imagem_url: Optional[str] = None
+    ativo: Optional[bool] = None
+
+
 # Categoria =============
 
 class CategoriaBase(BaseModel):
@@ -61,3 +70,8 @@ class UsuarioOut(UsuarioBase):
 
     class Config:
         orm_mode = True  
+
+class UsuarioUpdate(BaseModel):
+    nome: Optional[str] = None
+    email: Optional[str] = None
+    senha: Optional[str] = None

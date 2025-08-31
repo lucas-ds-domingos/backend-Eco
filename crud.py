@@ -1,9 +1,10 @@
 from sqlalchemy.orm import Session
 from models import Produto
-from schemas import ProdutoCreate
+from schemas import ProdutoCreate, UsuarioUpdate, ProdutoUpdate
 import models, schemas
 from passlib.hash import bcrypt
 from auth import gerar_hash_senha
+from fastapi import HTTPException
 
 #  Produtos
 
@@ -25,6 +26,16 @@ def deletar_produto(db: Session, produto_id: int):
     if produto:
         db.delete(produto)
         db.commit()
+    return produto
+
+def atualizar_produto(db: Session, produto_id: int, dados: ProdutoUpdate):
+    produto = db.query(Produto).filter(Produto.id == produto_id).first()
+    if not produto:
+        return None
+    for key, value in dados.dict(exclude_unset=True).items():
+        setattr(produto, key, value)
+    db.commit()
+    db.refresh(produto)
     return produto
 
 
@@ -85,3 +96,27 @@ def listar_usuarios(db: Session):
 
 def buscar_usuario(db: Session, usuario_id: int):
     return db.query(models.Usuario).filter(models.Usuario.id == usuario_id).first()
+
+def excluir_usuario(db: Session, usuario_id: int):
+    usuario_db = db.query(models.Usuario).filter(models.Usuario.id == usuario_id).first()
+    if not usuario_db:
+        raise HTTPException(status_code=404, detail="Usuário não encontrado")
+    db.delete(usuario_db)
+    db.commit()
+    return {"detail": "Usuário excluído com sucesso"}
+
+def atualizar_usuario(db: Session, usuario_id: int, usuario: UsuarioUpdate):
+    usuario_db = db.query(models.Usuario).filter(models.Usuario.id == usuario_id).first()
+    if not usuario_db:
+        return None
+
+    if usuario.nome is not None:
+        usuario_db.nome = usuario.nome
+    if usuario.email is not None:
+        usuario_db.email = usuario.email
+    if usuario.senha is not None:
+        usuario_db.senha = gerar_hash_senha(usuario.senha)
+
+    db.commit()
+    db.refresh(usuario_db)
+    return usuario_db

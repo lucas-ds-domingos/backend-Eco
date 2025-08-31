@@ -26,3 +26,10 @@ def deletar(produto_id: int, db: Session = Depends(get_db)):
     if not produto:
         raise HTTPException(status_code=404, detail="Produto não encontrado")
     return produto
+
+@router.put("/{produto_id}", response_model=schemas.ProdutoOut)
+def atualizar(produto_id: int, produto: schemas.ProdutoUpdate, db: Session = Depends(get_db)):
+    atualizado = crud.atualizar_produto(db, produto_id, produto)
+    if not atualizado:
+        raise HTTPException(status_code=404, detail="Produto não encontrado")
+    return atualizado
